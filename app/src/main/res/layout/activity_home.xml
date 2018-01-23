@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.administrator.localmusicplayerdemo.HomeActivity">
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </android.support.v4.view.ViewPager>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#ffffff"
+        android:orientation="vertical">
+
+        <SeekBar
+            android:id="@+id/seek_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="#ffffff"
+            android:clickable="true">
+
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="60dp"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@+id/image"
+                android:gravity="center" />
+
+            <LinearLayout
+                android:id="@+id/contral"
+                android:layout_width="120dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/previous"
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:background="@mipmap/ic_previous"
+                    android:clickable="true" />
+
+                <Button
+                    android:id="@+id/play"
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:background="@mipmap/ic_pause"
+                    android:clickable="true" />
+
+                <Button
+                    android:id="@+id/next"
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:background="@mipmap/ic_next"
+                    android:clickable="true" />
+            </LinearLayout>
+        </RelativeLayout>
+
+    </LinearLayout>
+</FrameLayout>
