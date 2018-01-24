@@ -4,7 +4,6 @@ import android.content.ContentUris;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -26,13 +25,17 @@ import com.example.administrator.localmusicplayerdemo.utils.TimeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+
 /**
  * Created by Administrator on 2018-01-22.
  */
 
 public class SongFragment extends Fragment {
 
-    private List<Song> songs;
 
     @Nullable
     @Override
@@ -43,26 +46,50 @@ public class SongFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ListView listView = view.findViewById(R.id.list);
-        songs = SongLoader.getAllSongs(getContext());
-        MyAdapter adapter = new MyAdapter();
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getContext(), MusicService.class);
-                intent.setAction(Actions.action_play_song);
-                intent.putParcelableArrayListExtra("songs", (ArrayList<? extends Parcelable>) songs);
-                intent.putExtra("index",position);
-                getActivity().startService(intent);
-            }
-        });
+        final ListView listView = view.findViewById(R.id.list);
+        SongLoader.getAllSongs(getContext()).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<ArrayList<Song>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(final ArrayList<Song> songs) {
+                        MyAdapter adapter = new MyAdapter(songs);
+                        listView.setAdapter(adapter);
+                        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                Intent intent = new Intent(getContext(), MusicService.class);
+                                intent.setAction(Actions.action_play_song);
+                                intent.putParcelableArrayListExtra("songs", songs);
+                                intent.putExtra("index",position);
+                                getActivity().startService(intent);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
     }
 
 
     class MyAdapter extends BaseAdapter{
 
-
+        private List<Song> songs;
+        public MyAdapter(List<Song> songs){
+            this.songs = songs;
+        }
         @Override
         public int getCount() {
             return songs.size();

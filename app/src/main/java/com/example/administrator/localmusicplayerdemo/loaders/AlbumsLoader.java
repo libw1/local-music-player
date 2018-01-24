@@ -22,8 +22,8 @@ public class AlbumsLoader {
 
     @NonNull
     public static Observable<List<Album>> getAllAlbums(@NonNull Context context){
-
-        List<Song> songs = SongLoader.getAllSongs(context);
+        List<Song> songs = new ArrayList<>();
+//        List<Song> songs = SongLoader.getAllSongs(context);
         return splitIntoAlbums(songs);
     }
 

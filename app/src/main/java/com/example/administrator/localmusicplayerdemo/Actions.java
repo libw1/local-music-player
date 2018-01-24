@@ -9,4 +9,5 @@ public interface Actions {
     String action_play = "ACTION_PLAY";
     String action_next = "ACTION_NEXT";
     String action_previous = "ACTION_PREVIOUS";
+    String action_seek = "ACTION_SEEK";
 }

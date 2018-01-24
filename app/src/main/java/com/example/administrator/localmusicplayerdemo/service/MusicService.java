@@ -1,16 +1,15 @@
 package com.example.administrator.localmusicplayerdemo.service;
 
-import android.content.ComponentName;
 import android.content.Intent;
 import android.media.session.MediaSession;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaBrowserServiceCompat;
 import android.support.v4.media.session.MediaSessionCompat;
-import android.text.TextUtils;
 
 import com.example.administrator.localmusicplayerdemo.Actions;
 import com.example.administrator.localmusicplayerdemo.Song;
@@ -25,39 +24,48 @@ public class MusicService extends MediaBrowserServiceCompat {
 
     private PlaybackManager playbackManager;
     private MediaSessionCompat mediaSession;
+    private int currentTime;
+    private int duration;
 
 
-/*    private Handler handler = new Handler() {
+    private Handler handler = new Handler() {
         public void handleMessage(android.os.Message msg) {
             if (msg.what == 1) {
-                if(playback != null) {
-                    currentTime = playback.position(); // 获取当前音乐播放的位置
+                if(playbackManager != null) {
+                    currentTime = playbackManager.getPosition();
+                    duration = playbackManager.getDuration();
                     Intent intent = new Intent();
                     intent.setAction("CURRENT_TIME");
                     intent.putExtra("currentTime", currentTime);
-                    sendBroadcast(intent); // 给PlayerActivity发送广播
-                    handler.sendEmptyMessageDelayed(1, 1000);
+                    intent.putExtra("duration",duration);
+                    sendBroadcast(intent);
+                    int remainingMillis = 1000 - currentTime % 1000;
+                    int delayMillis = Math.max(remainingMillis,20);
+                    handler.sendEmptyMessageDelayed(1, delayMillis);
                 }
 
             }
         }
-    };*/
+    };
 
     @Override
     public void onCreate() {
         super.onCreate();
         playbackManager = new PlaybackManager(this);
         setupMediaSession();
+        handler.sendEmptyMessage(1);
     }
 
     private void setupMediaSession() {
-        ComponentName mediaButtonReceiver = new ComponentName(getApplicationContext(), MediaButtonIntentReceiver.class);
-        mediaSession = new MediaSessionCompat(this, "loclplayer");
-        mediaSession.setCallback(playbackManager.getCallBack());
+//        ComponentName mediaButtonReceiver = new ComponentName(getApplicationContext(), MediaButtonIntentReceiver.class);
+        if (mediaSession != null) {
+            mediaSession = new MediaSessionCompat(this, "MusicService");
+            mediaSession.setCallback(playbackManager.getCallBack());
 
-        mediaSession.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS);
-        setSessionToken(mediaSession.getSessionToken());
-        mediaSession.setActive(true);
+            mediaSession.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS);
+            setSessionToken(mediaSession.getSessionToken());
+            mediaSession.setActive(true);
+        }
     }
 
     @Override
@@ -73,6 +81,12 @@ public class MusicService extends MediaBrowserServiceCompat {
                     playbackManager.playSongs(songs,index);
                 }
                 break;
+            case Actions.action_seek:
+                if (intent.hasExtra("progress")){
+                    int progress = intent.getIntExtra("progress",0);
+                    playbackManager.seekTo(progress);
+                    intent.removeExtra("progress");
+                }
         }
         return START_NOT_STICKY;
     }
@@ -89,10 +103,7 @@ public class MusicService extends MediaBrowserServiceCompat {
     @Nullable
     @Override
     public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
-        if (TextUtils.equals(getPackageName(), clientPackageName)) {
-            return new BrowserRoot("music", null);
-        }
-        return null;
+        return new BrowserRoot("root", null);
     }
 
     @Override
@@ -103,5 +114,9 @@ public class MusicService extends MediaBrowserServiceCompat {
     @Override
     public void onDestroy() {
         super.onDestroy();
+    }
+
+    public boolean isPlaying() {
+        return playbackManager.isPlaying();
     }
 }

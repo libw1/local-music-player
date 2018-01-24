@@ -6,17 +6,23 @@ import android.provider.BaseColumns;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.example.administrator.localmusicplayerdemo.BlacklistStore;
 import com.example.administrator.localmusicplayerdemo.Song;
 
 import java.util.ArrayList;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+
 /**
  * Created by Administrator on 2018-01-22.
  */
 
 public class SongLoader {
+    private static final String TAG = "SongLoader";
     protected static final String BASE_SELECTION = MediaStore.Audio.AudioColumns.IS_MUSIC + "=1" + " AND " + MediaStore.Audio.AudioColumns.TITLE + " != ''";
     protected static final String[] BASE_PROJECTION = new String[]{
             BaseColumns._ID,// 0
@@ -33,21 +39,37 @@ public class SongLoader {
     };
 
     @NonNull
-    public static ArrayList<Song> getAllSongs(@NonNull Context context) {
-        Cursor cursor = makeSongCursor(context, null, null);
-        return getSongs(cursor);
+    public static Observable<ArrayList<Song>> getAllSongs(@NonNull final Context context) {
+        return Observable.create(new ObservableOnSubscribe<ArrayList<Song>>() {
+            @Override
+            public void subscribe(ObservableEmitter<ArrayList<Song>> emitter) throws Exception {
+                Cursor cursor = makeSongCursor(context, null, null);
+                emitter.onNext(getSongs(cursor));
+                emitter.onComplete();
+            }
+        });
     }
 
     @NonNull
-    public static ArrayList<Song> getSongs(@NonNull final Context context, final String query) {
-        Cursor cursor = makeSongCursor(context, MediaStore.Audio.AudioColumns.TITLE + " LIKE ?", new String[]{"%" + query + "%"});
-        return getSongs(cursor);
+    public static Observable<ArrayList<Song>> getSongs(@NonNull final Context context, final String query) {
+        return Observable.create(new ObservableOnSubscribe<ArrayList<Song>>() {
+            @Override
+            public void subscribe(ObservableEmitter<ArrayList<Song>> emitter) throws Exception {
+                Cursor cursor = makeSongCursor(context, MediaStore.Audio.AudioColumns.TITLE + " LIKE ?", new String[]{"%" + query + "%"});
+                emitter.onNext(getSongs(cursor));
+            }
+        });
     }
 
     @NonNull
-    public static Song getSong(@NonNull final Context context, final int queryId) {
-        Cursor cursor = makeSongCursor(context, MediaStore.Audio.AudioColumns._ID + "=?", new String[]{String.valueOf(queryId)});
-        return getSong(cursor);
+    public static Observable<Song> getSong(@NonNull final Context context, final int queryId) {
+        return Observable.create(new ObservableOnSubscribe<Song>() {
+            @Override
+            public void subscribe(ObservableEmitter<Song> emitter) throws Exception {
+                Cursor cursor = makeSongCursor(context, MediaStore.Audio.AudioColumns._ID + "=?", new String[]{String.valueOf(queryId)});
+                emitter.onNext(getSong(cursor));
+            }
+        });
     }
 
     @NonNull
@@ -102,6 +124,7 @@ public class SongLoader {
 
     @Nullable
     public static Cursor makeSongCursor(@NonNull final Context context, @Nullable String selection, String[] selectionValues, final String sortOrder) {
+        Log.d(TAG, "makeSongCursor: " + Thread.currentThread().getName());
         if (selection != null && !selection.trim().equals("")) {
             selection = BASE_SELECTION + " AND " + selection;
         } else {
@@ -124,6 +147,7 @@ public class SongLoader {
     }
 
     private static String generateBlacklistSelection(String selection, int pathCount) {
+        Log.d(TAG, "generateBlacklistSelection: " + Thread.currentThread().getName());
         String newSelection = selection != null && !selection.trim().equals("") ? selection + " AND " : "";
         newSelection += MediaStore.Audio.AudioColumns.DATA + " NOT LIKE ?";
         for (int i = 0; i < pathCount - 1; i++) {
@@ -133,6 +157,7 @@ public class SongLoader {
     }
 
     private static String[] addBlacklistSelectionValues(String[] selectionValues, ArrayList<String> paths) {
+        Log.d(TAG, "addBlacklistSelectionValues: " + Thread.currentThread().getName());
         if (selectionValues == null) selectionValues = new String[0];
         String[] newSelectionValues = new String[selectionValues.length + paths.size()];
         System.arraycopy(selectionValues, 0, newSelectionValues, 0, selectionValues.length);

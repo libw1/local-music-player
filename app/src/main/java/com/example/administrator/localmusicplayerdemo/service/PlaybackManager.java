@@ -12,6 +12,7 @@ import com.example.administrator.localmusicplayerdemo.LocalMusicPlayer;
 import com.example.administrator.localmusicplayerdemo.Song;
 
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by Administrator on 2018-01-23.
@@ -23,6 +24,10 @@ public class PlaybackManager implements Playback.PlaybackCallbacks{
     private Context context;
     private List<Song> currentSongsQueue;
     private int current = -1;
+    private static final int ORDER = 0;
+    private static final int SINGLE = 1;
+    private static final int RANDOM = 2;
+    private int playMode = ORDER;
     private static final long MEDIA_SESSION_ACTIONS = PlaybackStateCompat.ACTION_PLAY
             | PlaybackStateCompat.ACTION_PAUSE
             | PlaybackStateCompat.ACTION_PLAY_PAUSE
@@ -35,16 +40,18 @@ public class PlaybackManager implements Playback.PlaybackCallbacks{
         this.context = context;
         playback = new LocalMusicPlayer(context);
         playback.setCallbacks(this);
-
     }
 
 
     public void playPrevious() {
-
+        checkPreviousSong();
+        play();
     }
 
-    public void playNext() {
 
+    public void playNext() {
+        checkNextSong();
+        play();
     }
 
     @Override
@@ -63,6 +70,7 @@ public class PlaybackManager implements Playback.PlaybackCallbacks{
                 playback.setDataSource(getCurrentSong().data);
                 playback.start();
 //                updateMetaData(getCurrentSong());
+                playback.setNextDataSource(currentSongsQueue.get(current + 1).data);
             }
         }
     }
@@ -141,6 +149,26 @@ public class PlaybackManager implements Playback.PlaybackCallbacks{
         play();
     }
 
+    public int getPosition(){
+        return playback.position();
+    }
+
+    public int getDuration(){
+        return playback.duration();
+    }
+
+    public void onRelease(){
+        playback.release();
+    }
+
+    public boolean isInitialized(){
+        return playback.isInitialized();
+    }
+
+    public boolean isPlaying(){
+        return playback.isPlaying();
+    }
+
     public MediaSessionCompat.Callback getCallBack() {
         return new MediaSessionCompat.Callback() {
             @Override
@@ -173,5 +201,35 @@ public class PlaybackManager implements Playback.PlaybackCallbacks{
                 seekTo((int) pos);
             }
         };
+    }
+
+    private void checkPreviousSong() {
+        if (playMode == ORDER){
+            if (current != 0){
+                current = current - 1;
+            } else {
+                current = currentSongsQueue.size() - 1;
+            }
+        }else if (playMode == RANDOM){
+            getRandomSong();
+        }
+    }
+
+    private void checkNextSong() {
+        if (playMode == ORDER){
+            if (current != currentSongsQueue.size() - 1){
+                current = 0;
+            } else {
+                current = current + 1;
+            }
+        }else if (playMode == RANDOM){
+            getRandomSong();
+        }
+    }
+
+    public void getRandomSong() {
+        Random random = new Random();
+        int randNumber = random.nextInt(currentSongsQueue.size());
+        current = randNumber;
     }
 }
