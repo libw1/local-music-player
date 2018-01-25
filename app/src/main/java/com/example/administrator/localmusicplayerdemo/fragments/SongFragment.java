@@ -17,18 +17,20 @@ import android.widget.TextView;
 
 import com.example.administrator.localmusicplayerdemo.Actions;
 import com.example.administrator.localmusicplayerdemo.R;
-import com.example.administrator.localmusicplayerdemo.Song;
-import com.example.administrator.localmusicplayerdemo.loaders.SongLoader;
 import com.example.administrator.localmusicplayerdemo.service.MusicService;
 import com.example.administrator.localmusicplayerdemo.utils.TimeUtils;
+import com.example.scan_media.loader.SongLoader;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+
+import model.Song;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
+
 
 /**
  * Created by Administrator on 2018-01-22.
@@ -49,14 +51,9 @@ public class SongFragment extends Fragment {
         final ListView listView = view.findViewById(R.id.list);
         SongLoader.getAllSongs(getContext()).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<ArrayList<Song>>() {
+                .subscribe(new Action1<ArrayList<Song>>() {
                     @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onNext(final ArrayList<Song> songs) {
+                    public void call(final ArrayList<Song> songs) {
                         MyAdapter adapter = new MyAdapter(songs);
                         listView.setAdapter(adapter);
                         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -70,17 +67,18 @@ public class SongFragment extends Fragment {
                             }
                         });
                     }
-
+                }, new Action1<Throwable>() {
                     @Override
-                    public void onError(Throwable e) {
+                    public void call(Throwable throwable) {
 
                     }
-
+                }, new Action0() {
                     @Override
-                    public void onComplete() {
+                    public void call() {
 
                     }
                 });
+
     }
 
 

@@ -9,10 +9,12 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 
 import com.example.administrator.localmusicplayerdemo.LocalMusicPlayer;
-import com.example.administrator.localmusicplayerdemo.Song;
+
 
 import java.util.List;
 import java.util.Random;
+
+import model.Song;
 
 /**
  * Created by Administrator on 2018-01-23.
@@ -229,7 +231,7 @@ public class PlaybackManager implements Playback.PlaybackCallbacks{
 
     public void getRandomSong() {
         Random random = new Random();
-        int randNumber = random.nextInt(currentSongsQueue.size());
-        current = randNumber;
+        int randomNumber = random.nextInt(currentSongsQueue.size());
+        current = randomNumber;
     }
 }

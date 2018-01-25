@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">scan_media</string>
+    <string name="albums">Albums</string>
+    <string name="artists">Artists</string>
+    <string name="genres">Genres</string>
+    <string name="songs">Songs</string>
+    <string name="playlists">Playlists</string>
+</resources>

@@ -1,4 +1,4 @@
-package com.example.administrator.localmusicplayerdemo;
+package model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -6,9 +6,7 @@ import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 
-/**
- * @author Karim Abou Zeid (kabouzeid)
- */
+
 public class Album implements Parcelable {
     public final ArrayList<Song> songs;
 

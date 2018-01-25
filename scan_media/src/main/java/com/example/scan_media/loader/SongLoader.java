@@ -1,73 +1,71 @@
-package com.example.administrator.localmusicplayerdemo.loaders;
+package com.example.scan_media.loader;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 import android.provider.MediaStore;
+import android.provider.MediaStore.Audio.AudioColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
-import com.example.administrator.localmusicplayerdemo.BlacklistStore;
-import com.example.administrator.localmusicplayerdemo.Song;
+
 
 import java.util.ArrayList;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
+import model.Song;
+import provider.BlacklistStore;
+import rx.Observable;
+import rx.Subscriber;
+import util.PreferenceUtil;
 
-/**
- * Created by Administrator on 2018-01-22.
- */
 
 public class SongLoader {
-    private static final String TAG = "SongLoader";
-    protected static final String BASE_SELECTION = MediaStore.Audio.AudioColumns.IS_MUSIC + "=1" + " AND " + MediaStore.Audio.AudioColumns.TITLE + " != ''";
+    protected static final String BASE_SELECTION = AudioColumns.IS_MUSIC + "=1" + " AND " + AudioColumns.TITLE + " != ''";
     protected static final String[] BASE_PROJECTION = new String[]{
             BaseColumns._ID,// 0
-            MediaStore.Audio.AudioColumns.TITLE,// 1
-            MediaStore.Audio.AudioColumns.TRACK,// 2
-            MediaStore.Audio.AudioColumns.YEAR,// 3
-            MediaStore.Audio.AudioColumns.DURATION,// 4
-            MediaStore.Audio.AudioColumns.DATA,// 5
-            MediaStore.Audio.AudioColumns.DATE_MODIFIED,// 6
-            MediaStore.Audio.AudioColumns.ALBUM_ID,// 7
-            MediaStore.Audio.AudioColumns.ALBUM,// 8
-            MediaStore.Audio.AudioColumns.ARTIST_ID,// 9
-            MediaStore.Audio.AudioColumns.ARTIST,// 10
+            AudioColumns.TITLE,// 1
+            AudioColumns.TRACK,// 2
+            AudioColumns.YEAR,// 3
+            AudioColumns.DURATION,// 4
+            AudioColumns.DATA,// 5
+            AudioColumns.DATE_MODIFIED,// 6
+            AudioColumns.ALBUM_ID,// 7
+            AudioColumns.ALBUM,// 8
+            AudioColumns.ARTIST_ID,// 9
+            AudioColumns.ARTIST,// 10
     };
 
     @NonNull
     public static Observable<ArrayList<Song>> getAllSongs(@NonNull final Context context) {
-        return Observable.create(new ObservableOnSubscribe<ArrayList<Song>>() {
+        return Observable.create(new Observable.OnSubscribe<ArrayList<Song>>() {
             @Override
-            public void subscribe(ObservableEmitter<ArrayList<Song>> emitter) throws Exception {
+            public void call(Subscriber<? super ArrayList<Song>> subscriber) {
                 Cursor cursor = makeSongCursor(context, null, null);
-                emitter.onNext(getSongs(cursor));
-                emitter.onComplete();
+                subscriber.onNext(getSongs(cursor));
+                subscriber.onCompleted();
             }
         });
     }
 
     @NonNull
     public static Observable<ArrayList<Song>> getSongs(@NonNull final Context context, final String query) {
-        return Observable.create(new ObservableOnSubscribe<ArrayList<Song>>() {
+        return Observable.create(new Observable.OnSubscribe<ArrayList<Song>>() {
             @Override
-            public void subscribe(ObservableEmitter<ArrayList<Song>> emitter) throws Exception {
-                Cursor cursor = makeSongCursor(context, MediaStore.Audio.AudioColumns.TITLE + " LIKE ?", new String[]{"%" + query + "%"});
-                emitter.onNext(getSongs(cursor));
+            public void call(Subscriber<? super ArrayList<Song>> subscriber) {
+                Cursor cursor = makeSongCursor(context, AudioColumns.TITLE + " LIKE ?", new String[]{"%" + query + "%"});
+                subscriber.onNext(getSongs(cursor));
+                subscriber.onCompleted();
             }
         });
     }
 
     @NonNull
     public static Observable<Song> getSong(@NonNull final Context context, final int queryId) {
-        return Observable.create(new ObservableOnSubscribe<Song>() {
+        return Observable.create(new Observable.OnSubscribe<Song>() {
             @Override
-            public void subscribe(ObservableEmitter<Song> emitter) throws Exception {
-                Cursor cursor = makeSongCursor(context, MediaStore.Audio.AudioColumns._ID + "=?", new String[]{String.valueOf(queryId)});
-                emitter.onNext(getSong(cursor));
+            public void call(Subscriber<? super Song> subscriber) {
+                Cursor cursor = makeSongCursor(context, AudioColumns._ID + "=?", new String[]{String.valueOf(queryId)});
+                subscriber.onNext(getSong(cursor));
             }
         });
     }
@@ -119,12 +117,11 @@ public class SongLoader {
 
     @Nullable
     public static Cursor makeSongCursor(@NonNull final Context context, @Nullable final String selection, final String[] selectionValues) {
-        return makeSongCursor(context, selection, selectionValues, null);
+        return makeSongCursor(context, selection, selectionValues, PreferenceUtil.getInstance(context).getSongSortOrder());
     }
 
     @Nullable
     public static Cursor makeSongCursor(@NonNull final Context context, @Nullable String selection, String[] selectionValues, final String sortOrder) {
-        Log.d(TAG, "makeSongCursor: " + Thread.currentThread().getName());
         if (selection != null && !selection.trim().equals("")) {
             selection = BASE_SELECTION + " AND " + selection;
         } else {
@@ -147,17 +144,15 @@ public class SongLoader {
     }
 
     private static String generateBlacklistSelection(String selection, int pathCount) {
-        Log.d(TAG, "generateBlacklistSelection: " + Thread.currentThread().getName());
         String newSelection = selection != null && !selection.trim().equals("") ? selection + " AND " : "";
-        newSelection += MediaStore.Audio.AudioColumns.DATA + " NOT LIKE ?";
+        newSelection += AudioColumns.DATA + " NOT LIKE ?";
         for (int i = 0; i < pathCount - 1; i++) {
-            newSelection += " AND " + MediaStore.Audio.AudioColumns.DATA + " NOT LIKE ?";
+            newSelection += " AND " + AudioColumns.DATA + " NOT LIKE ?";
         }
         return newSelection;
     }
 
     private static String[] addBlacklistSelectionValues(String[] selectionValues, ArrayList<String> paths) {
-        Log.d(TAG, "addBlacklistSelectionValues: " + Thread.currentThread().getName());
         if (selectionValues == null) selectionValues = new String[0];
         String[] newSelectionValues = new String[selectionValues.length + paths.size()];
         System.arraycopy(selectionValues, 0, newSelectionValues, 0, selectionValues.length);

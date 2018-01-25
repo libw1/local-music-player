@@ -1,13 +1,12 @@
-package com.example.administrator.localmusicplayerdemo;
+package model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Created by Administrator on 2018-01-22.
+ * @author Karim Abou Zeid (kabouzeid)
  */
-
-public class Song implements Parcelable{
+public class Song implements Parcelable {
     public static final Song EMPTY_SONG = new Song(-1, "", -1, -1, -1, "", -1, -1, "", -1, "");
 
     public final int id;
@@ -126,7 +125,7 @@ public class Song implements Parcelable{
         this.artistName = in.readString();
     }
 
-    public static final Parcelable.Creator<Song> CREATOR = new Parcelable.Creator<Song>() {
+    public static final Creator<Song> CREATOR = new Creator<Song>() {
         public Song createFromParcel(Parcel source) {
             return new Song(source);
         }

@@ -12,9 +12,11 @@ import android.support.v4.media.MediaBrowserServiceCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 
 import com.example.administrator.localmusicplayerdemo.Actions;
-import com.example.administrator.localmusicplayerdemo.Song;
+
 
 import java.util.List;
+
+import model.Song;
 
 /**
  * Created by Administrator on 2018-01-23.

@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import model.Song;
+
 /**
  * Created by Administrator on 2018-01-22.
  */
